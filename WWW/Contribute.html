@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Contribute</title>
+    </head>
+    <body>
+    
+    
+    <pre>WORD</pre>  <input type="text" id="search" style="background-color: #fff"/>
+        <input type="button" value="Check" style="display: inline; " onclick="check()" id="checkbutton">
+        <div id="wait"></div>
+        <div id="surprise" style="display: none">
+            <pre>MEAN</pre> <textarea id="MEAN" rows="8" cols="50"></textarea> <br/>
+            <pre>EX</pre> <textarea id="EX" rows="4" cols="50"></textarea > <br/>
+            <input type="button" value="Add" onclick="add()" />
+            <input type="button" value="Cancel" onclick="cancel()" />
+        </div>
+        <hr><a href="Search.html"><pre>Look up a word instead</pre></a>
+            <a  href="cdict.exe"><pre>Get the client</pre></a>
+
+    <script>
+        var xmlhr = new XMLHttpRequest();
+        var surprise = document.getElementById("surprise");
+        var search = document.getElementById("search");
+        var checkbutton = document.getElementById("checkbutton");
+        var mean = document.getElementById("MEAN");
+        var ex = document.getElementById("EX");
+        var wait = document.getElementById("wait");
+        var temp;
+        var url = " ";
+        function edit() {
+            surprise.style.display = "block";
+            checkbutton.style.display = "none";
+        }
+        function check() {
+            wait.innerHTML = "<pre>checking...</pre>";
+            surprise.style.display = "none";
+            xmlhr.onreadystatechange = function () {
+                if ((xmlhr.readyState == 4) && (xmlhr.status == 200)) {
+                    wait.innerHTML = "";
+
+                    if (xmlhr.responseText == "0")
+                        edit();
+
+                    else if (xmlhr.responseText == "-1") {
+                        alert("String not valid");
+                        cancel();
+                    }
+                    else {
+                        var prompt = xmlhr.responseText + " definitions for " + search.value + " already exists.\nAdd another definition?";
+                        var todo = window.confirm(prompt);
+                        if (todo == true) {
+                            edit();
+                        } else cancel();
+                    }
+                }
+            }
+
+            url = "form.php?search=" + search.value + "&check=1";
+            xmlhr.open("GET", url, true);
+            xmlhr.send();
+        }
+
+        function cancel() {
+            surprise.style.display = "none";
+            search.value = "";
+            checkbutton.style.display = "inline";
+            mean.value = "";
+            ex.value = "";
+        }
+
+        function add() {
+            var word = search.value.trim();
+            var meaning = mean.value.trim();
+
+            if (word && meaning) {
+                var vars = "WORD=" + word + "&MEAN=" + meaning;
+                temp = ex.value.trim();
+                if (temp)
+                    vars += "&EX=" + temp;
+                xmlhr.onreadystatechange = notify;
+
+                xmlhr.open("POST", "form.php", true);
+                xmlhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                xmlhr.send(vars);
+            }
+            else alert("Check input fields");
+        }
+        function notify() {
+            if ((xmlhr.readyState == 4) && (xmlhr.status == 200)) {
+                alert(JSON.parse(xmlhr.responseText) == "1" ? "Thank You" : "An error occured while adding to database");
+                cancel();
+            }
+        }
+
+    </script>
+
+    </body>
+</html>
