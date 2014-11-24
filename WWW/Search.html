@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+ <head>
+     <meta charset="utf-8" />
+    <title>Look Up a Word</title>    
+    
+ </head>
+<body>
+    <pre>WORD</pre>
+    <input type="text" id="search" />
+    <input type="button" id="Submit" onclick="ajax_fetch()" value="Look Up"/>
+    <input type="button" onclick="reset()" value="Reset" />
+    <div id="result"></div>
+    <div id="raw"></div>
+
+    <hr><a href="Contribute.html"><pre>Contribute a word instead</pre></a>
+        <a  href="cdict.exe"><pre>Get the client</pre></a>
+    <script>
+        var search = document.getElementById("search");
+        var raw = document.getElementById("raw");
+        var result = document.getElementById("result");
+        var xmlhttpreq = new XMLHttpRequest();
+
+        function ajax_fetch() {
+            if (!search.value.trim()) {
+                reset(); return;
+            }
+
+            raw.innerHTML = "";
+            result.innerHTML = "";
+            xmlhttpreq.onreadystatechange =
+            function () {
+                if ((xmlhttpreq.readyState == 4) && (xmlhttpreq.status == 200)) {
+                    raw.innerHTML = "";
+                    var data = JSON.parse(xmlhttpreq.responseText);
+                    
+                    if (data.KEYS == 0) {
+                        result.innerHTML = "<br><pre>" + data.COMMENT + "</pre>";
+                    }
+                    else
+                    {
+                        var str = "<pre>\nWORD - " + data.WORD + "\t\t" + data.KEYS + " entries found<hr/>\n";
+
+                        str += "<table>\n<tr><td>MEANS</td><td><ul>";
+                        for (var KEY in data.DICTIONARY) {
+                            str += "<li>" + data.DICTIONARY[KEY].MEAN + "</li>";
+                        }
+
+                        str += "</ul></td></tr>";
+
+                        str += "<tr><td>EXAMPLES</td><td><ul>";
+
+                        for (var KEY in data.DICTIONARY) {
+                            str += "<li>" + data.DICTIONARY[KEY].EX + "</li>";
+                        }
+
+                        str += "</ul></td></tr></table></pre>";
+
+                        result.innerHTML = str;
+                    }
+                    
+                }
+
+                else raw.innerHTML = "wait, looking up!";
+
+            }
+            req = "form.php?search=" + search.value;
+            xmlhttpreq.open("GET", req, true);
+            xmlhttpreq.send();
+        }
+
+        function reset() {
+            raw.innerHTML = "";
+            result.innerHTML = "";
+            search.value = "";
+        }
+
+
+    </script>
+</body>
+</html>
